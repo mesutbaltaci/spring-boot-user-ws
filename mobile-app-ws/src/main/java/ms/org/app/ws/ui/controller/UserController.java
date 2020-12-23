@@ -1,7 +1,10 @@
 package ms.org.app.ws.ui.controller;
 
+
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,7 +25,7 @@ public class UserController {
 	@Autowired
 	UserService userService;
 	
-	@GetMapping(path="/{id}")
+	@GetMapping(path="/{id}", produces= {MediaType.APPLICATION_JSON_VALUE,MediaType.APPLICATION_XML_VALUE}) // the order is matter, normally json is default bu now xml will be first. Also now I dont need to add accept key and json or xml in postman
 	public UserRest getUser (@PathVariable String id) {  //get user by user id using http://localhost:8080/users/BAEdQmA6bUjiPPJtdNPx5KTHFxsrZ7
 		UserRest returnValue = new UserRest();
 		UserDto userDto = userService.getUserByUserId(id);
@@ -30,7 +33,9 @@ public class UserController {
 		return returnValue;
 	}
 	
-	@PostMapping
+	@PostMapping(
+			consumes = {MediaType.APPLICATION_JSON_VALUE,MediaType.APPLICATION_XML_VALUE}, //accept xml or json both to create
+			produces= {MediaType.APPLICATION_JSON_VALUE,MediaType.APPLICATION_XML_VALUE}) 
 	public UserRest createUser(@RequestBody UserDetailsRequestModel userDetails) {
 		UserRest returnValue = new UserRest();
 		UserDto userDto = new UserDto();
