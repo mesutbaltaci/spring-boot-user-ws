@@ -1,4 +1,4 @@
-package ms.org.app.ws.UserRepository;
+package ms.org.app.ws.ui.repository;
 
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
