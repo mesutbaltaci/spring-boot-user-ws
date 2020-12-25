@@ -117,4 +117,30 @@ public class UserServiceImpl implements UserService {
 		 */		
 	}
 
+
+
+	@Override
+	public void deleteUser(String userId) {
+		
+		UserEntity userEntity = userRepository.findByUserId(userId);
+		if (userEntity==null) throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
+		
+		userRepository.delete(userEntity);
+		
+		/*
+		 * to delete user
+		 * delete method / http://localhost:8080/users/BAEdQmA6bUjiPPJtdNPx5KTHFxsrZ7
+		 * Body
+		 * {
+    		"email": "mesut@hotmail.com",
+    		"password": "123"
+   			}
+   			
+   			Header
+   			Authorization => we need to provide authorization code starts with Bearer.....
+   			because the user needs to authorize to update her/his info
+		 */		
+		
+	}
+
 }
