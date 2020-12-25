@@ -6,6 +6,8 @@ import ms.org.app.ws.shared.dto.UserDto;
 
 public interface UserService extends UserDetailsService {
 	UserDto createUser(UserDto user);
+	UserDto updateUser(String userId, UserDto user);
+	
 
 	UserDto getUser(String email);
 	

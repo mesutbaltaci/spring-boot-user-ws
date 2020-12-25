@@ -10,10 +10,12 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import ms.org.app.ws.exception.UserServiceException;
 import ms.org.app.ws.io.entity.UserEntity;
 import ms.org.app.ws.service.UserService;
 import ms.org.app.ws.shared.dto.UserDto;
 import ms.org.app.ws.shared.dto.Utils;
+import ms.org.app.ws.ui.model.response.ErrorMessages;
 import ms.org.app.ws.ui.repository.UserRepository;
 
 @Service
@@ -82,6 +84,37 @@ public class UserServiceImpl implements UserService {
 		if (userEntity==null) throw new UsernameNotFoundException(userId);
 		BeanUtils.copyProperties(userEntity, returnValue);
 		return returnValue;
+	}
+
+
+
+	@Override
+	public UserDto updateUser(String userId, UserDto user) {
+		UserDto returnValue = new UserDto();
+		UserEntity userEntity = userRepository.findByUserId(userId);
+		if (userEntity==null) throw new UserServiceException(ErrorMessages.NO_RECORD_FOUND.getErrorMessage());
+		
+		userEntity.setFirstName(user.getFirstName());
+		userEntity.setLastName(user.getLastName());
+		
+		UserEntity updatedUserDetails = userRepository.save(userEntity);
+		BeanUtils.copyProperties(updatedUserDetails, returnValue);
+		return returnValue;
+		
+		
+		/*
+		 * to update user
+		 * put method / http://localhost:8080/users/BAEdQmA6bUjiPPJtdNPx5KTHFxsrZ7
+		 * Body
+		 * {
+    		"firstName": "Hakki",
+    		"lastName": "Tavsan"
+   			}
+   			
+   			Header
+   			Authorization => we need to provide authorization code starts with Bearer.....
+   			because the user needs to authorize to update her/his info
+		 */		
 	}
 
 }
