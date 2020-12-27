@@ -2,6 +2,7 @@ package ms.org.app.ws.ui.controller;
 
 
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,7 +50,9 @@ public class UserController {
 	public UserRest getUser (@PathVariable String id) {  //get user by user id using http://localhost:8080/users/BAEdQmA6bUjiPPJtdNPx5KTHFxsrZ7
 		UserRest returnValue = new UserRest();
 		UserDto userDto = userService.getUserByUserId(id);
-		BeanUtils.copyProperties(userDto, returnValue);
+		ModelMapper modelMapper = new ModelMapper();
+		returnValue = modelMapper.map(userDto, UserRest.class);
+
 		return returnValue;
 	}
 	
@@ -106,11 +109,13 @@ public class UserController {
 		
 		List<UserDto> users= userService.getUsers(page, limit);
 		
-		for (UserDto userDto : users) {
-			UserRest userModel = new UserRest();
-			BeanUtils.copyProperties(userDto, userModel);
-			returnValue.add(userModel);
-		}
+		Type listType = new TypeToken<List<UserRest>>() {
+		}.getType();
+		returnValue = new ModelMapper().map(users, listType);
+		/*
+		 * for (UserDto userDto : users) { UserRest userModel = new UserRest();
+		 * BeanUtils.copyProperties(userDto, userModel); returnValue.add(userModel); }
+		 */
 		return returnValue;
 	}
 	
