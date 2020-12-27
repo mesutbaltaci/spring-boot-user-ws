@@ -3,6 +3,7 @@ package ms.org.app.ws.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import ms.org.app.ws.exception.UserServiceException;
 import ms.org.app.ws.io.entity.UserEntity;
 import ms.org.app.ws.service.UserService;
+import ms.org.app.ws.shared.dto.AddressDTO;
 import ms.org.app.ws.shared.dto.UserDto;
 import ms.org.app.ws.shared.dto.Utils;
 import ms.org.app.ws.ui.model.response.ErrorMessages;
@@ -41,17 +43,25 @@ public class UserServiceImpl implements UserService {
 		
 		if (userRepository.findByEmail(user.getEmail())!=null) throw new RuntimeException("Record already exists");
 		
+		for (int i=0; i<user.getAddresses().size(); i++) {
+			AddressDTO address = user.getAddresses().get(i);
+			address.setUserDetails(user);
+			address.setAddressId(utils.generateAddressId(30));
+			user.getAddresses().set(i, address);
+		}
 		
-		UserEntity userEntity = new UserEntity();
-		BeanUtils.copyProperties(user, userEntity);
+		//BeanUtils.copyProperties(user, userEntity);
+		ModelMapper modelMapper = new ModelMapper();
+		UserEntity userEntity= modelMapper.map(user, UserEntity.class);
 		
 		userEntity.setUserId(utils.generateUserId(30));
 		userEntity.setEncryptedPassword(bCryptPasswordEncoder.encode(user.getPassword()));
 		
 		UserEntity storedUserDetails = userRepository.save(userEntity);
 		
-		UserDto returnValue = new UserDto();
-		BeanUtils.copyProperties(storedUserDetails, returnValue);
+		
+		//BeanUtils.copyProperties(storedUserDetails, returnValue);
+		UserDto returnValue= modelMapper.map(storedUserDetails, UserDto.class);
 		
 		
 		
@@ -84,8 +94,8 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public UserDto getUserByUserId(String userId) {
 		UserDto returnValue = new UserDto();
-		UserEntity userEntity = userRepository.findByUserId("User with ID" +userId + " not found");
-		if (userEntity==null) throw new UsernameNotFoundException(userId);
+		UserEntity userEntity = userRepository.findByUserId(userId);
+		if (userEntity==null) throw new UsernameNotFoundException("User with ID"  + userId + " not found");
 		BeanUtils.copyProperties(userEntity, returnValue);
 		return returnValue;
 	}
