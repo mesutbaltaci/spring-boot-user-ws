@@ -10,6 +10,8 @@ import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -137,15 +139,32 @@ public class UserController {
 	}
 	
 	@GetMapping(path="/{userId}/addresses/{addressId}", produces= {MediaType.APPLICATION_JSON_VALUE,MediaType.APPLICATION_XML_VALUE}) // the order is matter, normally json is default bu now xml will be first. Also now I dont need to add accept key and json or xml in postman
-	public AddressesRest getUserAddress (@PathVariable String addressId) {  //get user by user id using http://localhost:8080/users/BAEdQmA6bUjiPPJtdNPx5KTHFxsrZ7
+	public AddressesRest getUserAddress (@PathVariable String userId, @PathVariable String addressId) {  //get user by user id using http://localhost:8080/users/BAEdQmA6bUjiPPJtdNPx5KTHFxsrZ7
 		
 				
 		AddressDTO addressDTO = addressesService.getAddress(addressId);
 		
 			ModelMapper modelMapper = new ModelMapper();
+			AddressesRest returnValue = modelMapper.map(addressDTO, AddressesRest.class);
+			//http://localhot:8888/users.<userId> /addresses
+			Link userLink = WebMvcLinkBuilder.linkTo(UserController.class).slash(userId).withRel("user");
+			Link userAddresesLink = WebMvcLinkBuilder.linkTo(UserController.class)
+					.slash(userId)
+					.slash("addresses")
+					.withRel("addresses");
+			
+			Link selfLink = WebMvcLinkBuilder.linkTo(UserController.class)
+					.slash(userId)
+					.slash("addresses")
+					.slash(addressId)
+					.withSelfRel();
+			returnValue.add(userLink);
+			returnValue.add(userAddresesLink);
+			returnValue.add(selfLink);
+			
 			
 		
-		return modelMapper.map(addressDTO, AddressesRest.class);
+		return returnValue;
 	}
 	
 }
