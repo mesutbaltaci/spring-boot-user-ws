@@ -100,9 +100,14 @@ public class UserEntity implements Serializable {
 		return emailVerificationStatus;
 	}
 
-	public void setEmailVerificationStatus(boolean emailVerificationStatus) {
+	public Boolean getEmailVerificationStatus() {
+		return emailVerificationStatus;
+	}
+
+	public void setEmailVerificationStatus(Boolean emailVerificationStatus) {
 		this.emailVerificationStatus = emailVerificationStatus;
 	}
+	
 
 	public List<AddressEntity> getAddresses() {
 		return addresses;

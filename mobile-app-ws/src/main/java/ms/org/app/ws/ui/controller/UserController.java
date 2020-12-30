@@ -167,4 +167,19 @@ public class UserController {
 		return returnValue;
 	}
 	
+	//http://localhost:8888/mobile-app-ws/users/email-verification?token=sdsdsads
+	@GetMapping(path="/email-verification", produces= {MediaType.APPLICATION_JSON_VALUE,MediaType.APPLICATION_XML_VALUE}) // the order is matter, normally json is default bu now xml will be first. Also now I dont need to add accept key and json or xml in postman
+	public OperationStatusModel verifyEmailToken (@RequestParam(value="token") String token) {  //get user by user id using http://localhost:8080/users/BAEdQmA6bUjiPPJtdNPx5KTHFxsrZ7
+		OperationStatusModel returnValue = new OperationStatusModel();
+		returnValue.setOperationName(RequestOperationName.VERIFY_EMAIL.name());
+
+		boolean isVerified = userService.verifyEmailToken(token);
+		if (isVerified) {
+			returnValue.setOperationResult(RequestOperationStatus.SUCCESS.name());
+		}else {
+			returnValue.setOperationResult(RequestOperationStatus.ERROR.name());
+		}
+		return returnValue;
+	}
+	
 }

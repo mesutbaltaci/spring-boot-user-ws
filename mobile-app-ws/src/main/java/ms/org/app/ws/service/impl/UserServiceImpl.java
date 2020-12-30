@@ -19,6 +19,7 @@ import ms.org.app.ws.exception.UserServiceException;
 import ms.org.app.ws.io.entity.UserEntity;
 import ms.org.app.ws.service.UserService;
 import ms.org.app.ws.shared.dto.AddressDTO;
+import ms.org.app.ws.shared.dto.AmazonSES;
 import ms.org.app.ws.shared.dto.UserDto;
 import ms.org.app.ws.shared.dto.Utils;
 import ms.org.app.ws.ui.model.response.ErrorMessages;
@@ -53,9 +54,12 @@ public class UserServiceImpl implements UserService {
 		//BeanUtils.copyProperties(user, userEntity);
 		ModelMapper modelMapper = new ModelMapper();
 		UserEntity userEntity= modelMapper.map(user, UserEntity.class);
-		
-		userEntity.setUserId(utils.generateUserId(30));
+		String publicUserId = utils.generateUserId(30);
+		userEntity.setUserId(publicUserId);
 		userEntity.setEncryptedPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+		
+		userEntity.setEmailVerificationToken(utils.generateEmailVerificationToken(publicUserId));
+		userEntity.setEmailVerificationStatus(false);
 		
 		UserEntity storedUserDetails = userRepository.save(userEntity);
 		
@@ -63,7 +67,8 @@ public class UserServiceImpl implements UserService {
 		//BeanUtils.copyProperties(storedUserDetails, returnValue);
 		UserDto returnValue= modelMapper.map(storedUserDetails, UserDto.class);
 		
-		
+		//send an email message to user to verify their email address;
+		new AmazonSES().verifyEmail(returnValue);
 		
 		return returnValue;
 	}
@@ -86,7 +91,10 @@ public class UserServiceImpl implements UserService {
 		UserEntity userEntity = userRepository.findByEmail(email);
 		if (userEntity==null) throw new UsernameNotFoundException(email);
 		
-		return new User(userEntity.getEmail(), userEntity.getEncryptedPassword(),new ArrayList<>());
+		return new User(userEntity.getEmail(), userEntity.getEncryptedPassword(), userEntity.getEmailVerificationStatus(),
+				true,true,true, new ArrayList<>());
+		
+		//return new User(userEntity.getEmail(), userEntity.getEncryptedPassword(),new ArrayList<>());
 	}
 
 
@@ -175,6 +183,28 @@ public class UserServiceImpl implements UserService {
 			returnValue.add(userDto);
 		}
 		return returnValue;
+	}
+
+
+
+	@Override
+	public boolean verifyEmailToken(String token) {
+		 boolean returnValue = false;
+
+	        // Find user by token
+	        UserEntity userEntity = userRepository.findUserByEmailVerificationToken(token);
+
+	        if (userEntity != null) {
+	            boolean hastokenExpired = Utils.hasTokenExpired(token);
+	            if (!hastokenExpired) {
+	                userEntity.setEmailVerificationToken(null);
+	                userEntity.setEmailVerificationStatus(Boolean.TRUE);
+	                userRepository.save(userEntity);
+	                returnValue = true;
+	            }
+	        }
+
+	        return returnValue;
 	}
 
 }
